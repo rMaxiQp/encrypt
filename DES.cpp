@@ -31,10 +31,10 @@ static void F_func(int input[32], int output[32], int subkey[48]) {
   int len = 48;
   int temp[48] = {0};
   int temp_1[32] = {0};
-  E(input, temp, E_Table);
+  mix(input, temp, E_Table, 48);//E(input, temp, E_Table);
   XOR(temp, subkey, len);
   S(temp, temp_1, S_BOX);
-  P(temp_1, output, P_TABLE);
+  mix(temp_1, output, P_TABLE, 32);//P(temp_1, output, P_TABLE);
 }
 
 static void E(const int input[32], int output[48], int table[48]) {
@@ -91,7 +91,7 @@ static void subkey_func(const int input[64], int subkey[16][48]) {
   int pc_2[16][56] = {0};
   int rotate_c [16][28] = {0};
   int rotate_d [16][28] = {0};
-  PC_1(input, pc_1, PC1_Table);
+  mix(input, pc_1, PC1_Table, 56);//PC_1(input, pc_1, PC1_Table);
   for (i = 0; i < 28; i++) {
     c[i] = pc_1[i];
     d[i] = pc_1[i + 28];
@@ -115,7 +115,7 @@ static void subkey_func(const int input[64], int subkey[16][48]) {
   }
 
   for (i = 0; i < 16; i++) {
-    PC_2(pc_2[i], subkey[i], PC2_Table);
+    mix(pc_2[i], subkey[i], PC2_Table, 48);//PC_2(pc_2[i], subkey[i], PC2_Table);
   }
 }
 
@@ -150,7 +150,7 @@ static void DES_Efun(char input[8], char key_in[8], int output[64]) {
   int n;
   int l[17][32], r[17][32];
   Char_To_Bit(input, chartobit, 8);
-  IP(chartobit, Ip, IP_Table);
+  mix(chartobit, Ip, IP_Table, 64);//IP(chartobit, Ip, IP_Table);
   Char_To_Bit(key_in, key, 8);
   subkey_func(key, subkey);
   for (int i = 0; i < 32; i++) {
@@ -175,7 +175,7 @@ static void DES_Efun(char input[8], char key_in[8], int output[64]) {
     output_l[t] = l[16][t];
     output_l[t + 32] = r[16 + t];
   }
-  IP_In(output_l, output, IPR_Table);
+  mix(output_l, output, IP_Table_Inv, 64);//IP_In(output_l, output, IP_Table_Inv);
 }
 
 static void DES_Dfun(int input[64], char key_in[8], char output[8]) {
@@ -186,7 +186,9 @@ static void DES_Dfun(int input[64], char key_in[8], char output[8]) {
   int chartobit[64] = {0};
   int key[64];
   int l[17][32], r[17][32];
-  IP(input, Ip, IP_Table);
+
+  mix(input, Ip, IP_Table, 64);//IP(input, Ip, IP_Table);
+
   Char_To_Bit(key_in, key, 8);
   subkey_func(key, subkey);
   for (int i = 0; i < 32; i++) {
@@ -195,9 +197,11 @@ static void DES_Dfun(int input[64], char key_in[8], char output[8]) {
   }
 
   for (int j = 1; j < 16; j++) {
+
     for (int k = 0; k < 32; k++) {
       l[j][k] = r[j - 1][k];
     }
+
     F_func(r[j - 1], r[j], subkey[j - 1]);
     XOR(r[j], l[j-1], 32);
   }
@@ -215,6 +219,13 @@ static void DES_Dfun(int input[64], char key_in[8], char output[8]) {
     output_l[t + 32] = r[16 + t];
   }
 
-  IP_In(output_l, output_2, IPR_Table);
+  mix(output_l, output_2, IP_Table_Inv, 64);//IP_In(output_l, output_2, IP_Table_Inv);
   Bit_To_Char(output_2, output, 8);
+}
+
+static void mix(const int input[], int output[], int table[], int len) {
+  int i;
+  for (i = 0; i < len; i++) {
+    output[i] = input[table[i] - 1];
+  }
 }
