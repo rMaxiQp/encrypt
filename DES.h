@@ -111,28 +111,34 @@ const static int E_Table[48] = {
   28, 29, 30, 31, 32, 1
 };
 
-
 static void Char_To_Bit(const char input[], int output[], int bits);
 
 static void Bit_To_Char(const int input[], char output[], int bits);
 
+static void F_func(int input[32], int output[32], int subkey[48]);
+
+/*
+ using mix() instead
+ */
+
 //similar to E(), P(), IP_IN()
 static void IP(const int input[64], int output[64], int table[64]);
 
-static void F_func(int input[32], int output[32], int subkey[48]);
-
 //similar to IP(), P(), IP_IN()
 static void E(const int input[32], int output[48], int table[48]);
-
-static void XOR(int *INA, int *INB, int len);
-
-static void S(const int input[48], int output[32], int table[8][4][16]);
 
 //similar to IP(), E(), IP_IN()
 static void P(const int input[32], int output[32], int table[32]);
 
 //similar to P(), E(), IP()
 static void IP_In(const int input[64], int output[64], int table[64]);
+
+//general form
+static void mix(const int input[], int output[], int table[], int len);
+
+static void XOR(int *INA, int *INB, int len);
+
+static void S(const int input[48], int output[32], int table[8][4][16]);
 
 static void subkey_func(const int input[64], int subkey[16][48]);
 
@@ -145,5 +151,3 @@ static void PC_2(const int input[56], int output[48], int table[48]);
 static void DES_Efun(char input[8], char key_in[8], int output[64]);
 
 static void DES_Dfun(int input[64], char key_in[8], char output[8]);
-
-static void mix(const int input[], int output[], int table[], int len);
